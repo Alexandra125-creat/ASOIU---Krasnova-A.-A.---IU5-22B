@@ -1,1 +1,69 @@
+using System;
+Console.WriteLine("Реализация алгоритма поиска с опечатками");
+Console.WriteLine("Программа вычисления расстояния Левенштейна");
+Console.WriteLine("Для выхода введите 'exit' в качестве первой строки\n");
 
+while (true)
+{
+    Console.Write("Введите первую строку: ");
+    string str1 = Console.ReadLine();
+
+    if (str1?.ToLower() == "exit")
+    {
+        Console.WriteLine("Программа завершена.");
+        break;
+    }
+
+    Console.Write("Введите вторую строку: ");
+    string str2 = Console.ReadLine();
+
+    // Вычисление расстояния Левенштейна
+    int distance = LevenshteinDistance(str1, str2);
+
+    Console.WriteLine($"Расстояние Левенштейна между '{str1}' и '{str2}': {distance}\n");
+}
+
+static int LevenshteinDistance(string s1, string s2)
+{
+    // Проверка на null
+    if (s1 == null || s2 == null)
+        return -1;
+
+    int s1len = s1.Length;
+    int s2len = s2.Length;
+
+    if (s1len == 0 && s2len == 0)
+        return 0;
+
+    if (s1len == 0)
+        return s2len;
+
+    if (s2len == 0)
+        return s1len;
+
+    // Приведение строк к верхнему регистру для регистронезависимого сравнения
+    string str1 = s1.ToUpper();
+    string str2 = s2.ToUpper();
+
+    int[,] matrix = new int[s1len + 1, s2len + 1];
+
+    for (int i = 0; i <= s1len; i++)
+        matrix[i, 0] = i;
+
+    for (int j = 0; j <= s2len; j++)
+        matrix[0, j] = j;
+
+    for (int i = 1; i <= s1len; i++)
+    {
+        for (int j = 1; j <= s2len; j++)
+        {
+            int cost = (str1[i - 1] == str2[j - 1]) ? 0 : 1;
+            int deletion = matrix[i - 1, j] + 1;
+            int insertion = matrix[i, j - 1] + 1;
+            int substitution = matrix[i - 1, j - 1] + cost;
+
+            matrix[i, j] = Math.Min(Math.Min(deletion, insertion), substitution);
+        }
+    }
+    return matrix[s1len, s2len];
+}
