@@ -1,0 +1,120 @@
+using System;
+
+Console.Write("Введите количество участников в заезде: ");
+int count = int.Parse(Console.ReadLine());
+
+string[] teams = new string[count];
+double[] avgSpeeds = new double[count];
+
+for (int i=0; i<count; i++)
+{
+    Console.WriteLine($"Команда №{i + 1}");
+    Console.Write("Введите название команды: ");
+    teams[i] = Console.ReadLine();
+
+    Console.Write("Введите среднюю скорость команды (км/ч): ");
+    avgSpeeds[i] = double.Parse(Console.ReadLine());
+    Console.WriteLine();
+}
+
+Console.WriteLine($"{"-Исходный порядок-",25}");
+Console.WriteLine(new string('-', 50));
+
+Console.WriteLine($"{"Команда",-20} {"Скорость (км/ч)",20}");
+Console.WriteLine(new string('-', 50));
+
+for (int i = 0; i < count; i++)
+{
+    Console.WriteLine($"{teams[i],-20} {avgSpeeds[i],20:F2}");
+}
+Console.WriteLine();
+double s = 0;
+for (int i=0; i < count; i++)
+{
+    s = s + avgSpeeds[i];
+}
+
+double sred = s / count;
+
+Console.WriteLine($"Средняя скорость всех команд: {sred:F2} км/ч");
+
+double maxspeed = 0;
+int maxi = 0;
+for (int i=0; i<count; i++)
+{
+    if (maxspeed < avgSpeeds[i])
+    {
+        maxspeed = avgSpeeds[i];
+        maxi = i;
+    }
+}
+Console.WriteLine($"Лидер: {teams[maxi]} ({maxspeed}км/ч)");
+
+double minspeed = avgSpeeds[0];
+int mini = 0;
+for (int i=0; i<count; i++)
+{
+    if (minspeed > avgSpeeds[i])
+    {
+        minspeed = avgSpeeds[i];
+        mini = i;
+    }
+}
+Console.WriteLine($"Самый медленный {teams[mini]} ({minspeed}км/ч)");
+double m = maxspeed - minspeed;
+Console.WriteLine($"Разница темпа: {m} км/ч");
+
+string[] sortedteams = new string[count];
+double[] sortedavgSpeeds = new double[count];
+
+for (int i =0; i<count; i++)
+{
+    sortedteams[i] = teams[i];
+    sortedavgSpeeds[i] = avgSpeeds[i];
+}
+
+//Используем пузырьковую сортировку
+for (int i=0; i < count - 1; i++)
+{
+    for (int j = 0; j < count - i - 1; j++)
+    {
+        if (sortedavgSpeeds[j]< sortedavgSpeeds[j + 1])
+        {
+            double vrem = sortedavgSpeeds[j];
+            sortedavgSpeeds[j] = sortedavgSpeeds[j + 1];
+            sortedavgSpeeds[j + 1] = vrem;
+
+            string str = sortedteams[j];
+            sortedteams[j] = sortedteams[j + 1];
+            sortedteams[j + 1] = str;
+
+        }
+    }
+
+}
+Console.WriteLine();
+
+Console.WriteLine($"{"--ИТОГОВЫЙ ПРОТОКОЛ КВАЛИФИКАЦИИ--",25}");
+Console.WriteLine(new string('-', 50));
+
+Console.WriteLine($"{"Место",-6} {"Команда",-20} {"Скорость (км/ч)",-20}");
+Console.WriteLine(new string('-', 50));
+
+for (int i=0; i<count; i++)
+{
+    Console.WriteLine($"{i + 1,-6} {sortedteams[i],-20} {sortedavgSpeeds[i],20:F2}");
+}
+Console.WriteLine();
+Console.Write("Введите минимальную скорость для отбора (км/ч): ");
+int k = int.Parse(Console.ReadLine());
+Console.WriteLine($"Команды со скоростью >= {k} км/ч");
+int f = 0;
+for (int i = 0; i < count; i++)
+{
+    if (avgSpeeds[i] >= k)
+    {
+        Console.WriteLine($"{teams[i]}");
+        f++;
+    }
+}
+Console.WriteLine($"Отобрано {f} команд");
