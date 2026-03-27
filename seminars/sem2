@@ -1,0 +1,306 @@
+using System;
+
+static void DenseToCOO(int[,] matrix, out int[] Row, out int[] Column, out int[] Data)
+{
+    int count = 0;
+    for (int i = 0; i < matrix.GetLength(0); i++)
+    {
+        for (int j = 0; j < matrix.GetLength(1); j++)
+        {
+            if (matrix[i, j] != 0)
+                count++;
+        }
+    }
+
+    Row = new int[count];
+    Column = new int[count];
+    Data = new int[count];
+
+    int idx = 0;
+    for (int i = 0; i < matrix.GetLength(0); i++)
+    {
+        for (int j = 0; j < matrix.GetLength(1); j++)
+        {
+            if (matrix[i, j] != 0)
+            {
+                Row[idx] = i;
+                Column[idx] = j;
+                Data[idx] = matrix[i, j];
+                idx++;
+            }
+        }
+    }
+}
+
+static int[,] COOToDense(int[] Row, int[] Column, int[] Data, int totalRows, int totalCols)
+{
+    int[,] matrix = new int[totalRows, totalCols];
+    for (int k = 0; k < Data.Length; k++)
+    {
+        int row = Row[k];
+        int col = Column[k];
+        int val = Data[k];
+
+        if (row < totalRows && col < totalCols)
+        {
+            matrix[row, col] = val;
+        }
+    }
+    return matrix;
+}
+
+static void isCOOEffective(int[,] matrix, out bool opt)
+{
+    int totalRows = matrix.GetLength(0);
+    int totalCols = matrix.GetLength(1);
+    int s = 0;
+    for (int i = 0; i < totalRows; i++)
+    {
+        for (int j = 0; j < totalCols; j++)
+        {
+            if (matrix[i, j] != 0)
+            {
+                s++;
+            }
+        }
+    }
+    opt = s * 3 < totalRows * totalCols;
+}
+
+static void DenseToLIL(int[,] dense, out int[][] rows, out int[][] data)
+{
+    int numRows = dense.GetLength(0);
+    int numCols = dense.GetLength(1);
+
+    rows = new int[numRows][];
+    data = new int[numRows][];
+
+    for (int i = 0; i < numRows; i++)
+    {
+        int count = 0;
+        for (int j = 0; j < numCols; j++)
+            if (dense[i, j] != 0) count++;
+
+        rows[i] = new int[count];
+        data[i] = new int[count];
+
+        int idx = 0;
+        for (int j = 0; j < numCols; j++)
+        {
+            if (dense[i, j] != 0)
+            {
+                rows[i][idx] = j;
+                data[i][idx] = dense[i, j];
+                idx++;
+            }
+        }
+    }
+}
+
+static int[,] LILToDense(int[][] rows, int[][] data, int numRows, int numCols)
+{
+    int[,] dense = new int[numRows, numCols];
+    for (int i = 0; i < numRows; i++)
+    {
+        for (int k = 0; k < rows[i].Length; k++)
+        {
+            dense[i, rows[i][k]] = data[i][k];
+        }
+    }
+    return dense;
+}
+
+static void isLILEffective(int[,] dense, out bool opt)
+{
+    int r = dense.GetLength(0);
+    int c = dense.GetLength(1);
+    int n = 0;
+    for (int i = 0; i < r; i++)
+        for (int j = 0; j < c; j++)
+            if (dense[i, j] != 0) n++;
+
+    opt = n * 2 < r * c;
+}
+
+static void DenseToCSR(int[,] dense, out int[] data, out int[] indices, out int[] indexPointers)
+{
+    int numRows = dense.GetLength(0);
+    int numCols = dense.GetLength(1);
+
+    int nonZeroCount = 0;
+    for (int i = 0; i < numRows; i++)
+        for (int j = 0; j < numCols; j++)
+            if (dense[i, j] != 0) nonZeroCount++;
+
+    data = new int[nonZeroCount];
+    indices = new int[nonZeroCount];
+    indexPointers = new int[numRows + 1];
+
+    int idx = 0;
+    for (int i = 0; i < numRows; i++)
+    {
+        indexPointers[i] = idx;
+        for (int j = 0; j < numCols; j++)
+        {
+            if (dense[i, j] != 0)
+            {
+                data[idx] = dense[i, j];
+                indices[idx] = j;
+                idx++;
+            }
+        }
+    }
+    indexPointers[numRows] = nonZeroCount;
+}
+
+static int[,] CSRToDense(int[] data, int[] indices, int[] indexPointers, int numRows, int numCols)
+{
+    int[,] dense = new int[numRows, numCols];
+    for (int i = 0; i < numRows; i++)
+    {
+        int start = indexPointers[i];
+        int end = indexPointers[i + 1];
+        for (int k = start; k < end; k++)
+        {
+            dense[i, indices[k]] = data[k];
+        }
+    }
+    return dense;
+}
+
+static void isCSREffective(int[,] dense, out bool opt)
+{
+    int r = dense.GetLength(0);
+    int c = dense.GetLength(1);
+    int n = 0;
+    for (int i = 0; i < r; i++)
+        for (int j = 0; j < c; j++)
+            if (dense[i, j] != 0) n++;
+
+    opt = 2 * n + r + 1 < r * c;
+}
+
+static void PrintMatrix(int[,] m)
+{
+    for (int i = 0; i < m.GetLength(0); i++)
+    {
+        for (int j = 0; j < m.GetLength(1); j++)
+        {
+            Console.Write($"{m[i, j],3} ");
+        }
+        Console.WriteLine();
+    }
+}
+
+static void PrintJaggedArray(string name, int[][] arr)
+{
+    Console.WriteLine($"  {name}:");
+    for (int i = 0; i < arr.Length; i++)
+    {
+        Console.Write($"    [{i}]: [ ");
+        if (arr[i].Length == 0)
+        {
+            Console.WriteLine("(пусто) ]");
+        }
+        else
+        {
+            for (int k = 0; k < arr[i].Length; k++)
+                Console.Write($"{arr[i][k],3}{(k < arr[i].Length - 1 ? "," : " ")}");
+            Console.WriteLine("]");
+        }
+    }
+}
+
+Console.WriteLine("АЛГОРИТМ СОО");
+Console.WriteLine("Задана матрица (5x7):");
+int[,] matrix = {
+    { 0, 0, 9, 0, 0, 0, 0 },
+    { 0, 2, 0, 0, 0, 0, 0 },
+    { 0, 0, 0, 1, 0, 0, 0 },
+    { 0, 0, 0, 0, 5, 0, 0 },
+    { 0, 0, 0, 6, 0, 0, 0 }
+};
+PrintMatrix(matrix);
+
+Console.WriteLine("\nПреобразование в COO формат:");
+DenseToCOO(matrix, out int[] Row, out int[] Column, out int[] Data);
+Console.WriteLine("Row = [" + string.Join(", ", Row) + "]");
+Console.WriteLine("Column = [" + string.Join(", ", Column) + "]");
+Console.WriteLine("Data = [" + string.Join(", ", Data) + "]");
+
+Console.WriteLine("\nВосстановление из COO формата:");
+int totalRows = 5;
+int totalCols = 7;
+int[,] restoredCOO = COOToDense(Row, Column, Data, totalRows, totalCols);
+PrintMatrix(restoredCOO);
+
+isCOOEffective(matrix, out bool cooEffective);
+Console.WriteLine($"\n Если в COO эффективное хранение выводит True, иначе False: {cooEffective}");
+
+Console.WriteLine(" АЛГОРИТМ LIL");
+
+int[,] matrixLIL = {
+    { 0, 1, 0, 2, 0, 0 },
+    { 0, 0, 0, 0, 0, 3 },
+    { 4, 0, 5, 0, 0, 0 },
+    { 0, 0, 0, 6, 0, 0 }
+};
+
+Console.WriteLine("Тестовая матрица для LIL (4x6):");
+PrintMatrix(matrixLIL);
+
+DenseToLIL(matrixLIL, out int[][] rowsLIL, out int[][] dataLIL);
+Console.WriteLine("\nПреобразование в LIL формат:");
+PrintJaggedArray("Rows (индексы столбцов)", rowsLIL);
+PrintJaggedArray("Data (значения)", dataLIL);
+
+int[,] restoredLIL = LILToDense(rowsLIL, dataLIL, 4, 6);
+Console.WriteLine("\nВосстановленная матрица из LIL:");
+PrintMatrix(restoredLIL);
+
+isLILEffective(matrixLIL, out bool lilEffective);
+Console.WriteLine($"\nЕсли в LIL эффективное хранение выводит True, иначе False: {lilEffective}");
+
+Console.WriteLine("АЛГОРИТМ CSR");
+
+int[,] matrixCSR = {
+    { 8, 0, 2, 0, 0 },
+    { 0, 0, 5, 0, 0 },
+    { 0, 0, 0, 0, 0 },
+    { 0, 0, 0, 0, 0 },
+    { 0, 0, 7, 1, 2 },
+    { 0, 0, 0, 0, 0 },
+    { 0, 0, 0, 9, 0 }
+};
+
+Console.WriteLine("Тестовая матрица для CSR (7x5):");
+PrintMatrix(matrixCSR);
+
+DenseToCSR(matrixCSR, out int[] dataCSR, out int[] indicesCSR, out int[] ipCSR);
+Console.WriteLine("\nПреобразование в CSR формат:");
+Console.WriteLine("Data = [" + string.Join(", ", dataCSR) + "]");
+Console.WriteLine("Indices = [" + string.Join(", ", indicesCSR) + "]");
+Console.WriteLine("IndexPointers = [" + string.Join(", ", ipCSR) + "]");
+
+Console.WriteLine("\nДекодирование строк:");
+for (int i = 0; i < ipCSR.Length - 1; i++)
+{
+    int start = ipCSR[i];
+    int end = ipCSR[i + 1];
+    Console.Write($"Строка {i}: ");
+    if (start == end)
+        Console.WriteLine("(пустая)");
+    else
+    {
+        for (int k = start; k < end; k++)
+            Console.Write($"столбец {indicesCSR[k]} = {dataCSR[k]}  ");
+        Console.WriteLine();
+    }
+}
+
+int[,] restoredCSR = CSRToDense(dataCSR, indicesCSR, ipCSR, 7, 5);
+Console.WriteLine("\nВосстановленная матрица из CSR:");
+PrintMatrix(restoredCSR);
+
+isCSREffective(matrixCSR, out bool csrEffective);
+Console.WriteLine($"\nЕсли в CSR эффективное хранение выводит True, иначе False: {csrEffective}");
