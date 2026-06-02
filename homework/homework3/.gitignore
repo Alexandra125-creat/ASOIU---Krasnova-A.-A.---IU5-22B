@@ -1,0 +1,9 @@
+bin/
+obj/
+app.db
+.vs/
+*.user
+*.suo
+*.cache
+*.tmp
+*.resx
